@@ -1,0 +1,19 @@
+{
+  "products": [
+    {
+      "product_name": "cucumber",
+      "price": 120,
+      "amount": 11
+    },
+    {
+      "product_name": "tomato",
+      "price": 90,
+      "amount": 3
+    },
+    {
+      "product_name": "potato",
+      "price": 65,
+      "amount": 7
+    }
+  ]
+}
