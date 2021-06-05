@@ -11,10 +11,6 @@ from client import *
 currentUser = {}
 
 
-def out_red_text(text):
-    print("\033[31m{}\033[0m".format(text))
-
-
 def update_admin_catalog(catalog, currentRow, currentColumn):
     os.system("cls")
     print(f'Приветствуем, администратор {currentUser["name"]}')
@@ -43,7 +39,7 @@ def get_value():
     return newValue
 
 
-def update_catalog(catalog, currentRow, currentColumn):
+def change_catalog_value(catalog, currentRow, currentColumn):
     newValue = get_value()
     currentRow -= 1
     if currentColumn == 1:
@@ -57,11 +53,17 @@ def update_catalog(catalog, currentRow, currentColumn):
     return newCatalog
 
 
-def show_admin_catalog(catalog):
+def show_login_catalog(catalog):
     currentRow = 1
-    currentColumn = 1
+    if currentUser['role'] == 'admin':
+        currentColumn = 1
+    elif currentUser['role'] == 'guest':
+        currentColumn = get_cart_product_amount(catalog['products'][0]['product_name'])
     pressedKey = None
-    update_admin_catalog(catalog, currentRow, currentColumn)
+    if currentUser['role'] == 'admin':
+        update_admin_catalog(catalog, currentRow, currentColumn)
+    elif currentUser['role'] == 'guest':
+        update_guest_catalog(catalog, currentRow, currentColumn)
     while pressedKey != 113:  # q
         pressedKey = None
         while pressedKey is None:
@@ -73,16 +75,24 @@ def show_admin_catalog(catalog):
             elif pressedKey == 72 and currentRow > 1:
                 currentRow -= 1
             # right
-            elif pressedKey == 77 and currentColumn < 2:
+            elif pressedKey == 77 and ((currentUser['role'] == 'admin' and currentColumn < 2) or
+                                        currentUser['role'] == 'guest'):
                 currentColumn += 1
             # left
-            elif pressedKey == 75 and currentColumn > 1:
+            elif pressedKey == 75 and ((currentUser['role'] == 'admin' and currentColumn > 1) or
+                                       (currentUser['role'] == 'guest' and currentColumn > 0)):
                 currentColumn -= 1
             # enter
             elif pressedKey == 13:
-                catalog = update_catalog(catalog, currentRow, currentColumn)
-            update_admin_catalog(catalog, currentRow, currentColumn)
-    show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'])
+                catalog = change_catalog_value(catalog, currentRow, currentColumn)
+            if currentUser['role'] == 'admin':
+                update_admin_catalog(catalog, currentRow, currentColumn)
+            elif currentUser['role'] == 'guest':
+                update_guest_catalog(catalog, currentRow, currentColumn)
+    if currentUser['role'] == 'admin':
+        show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'])
+    elif currentUser['role'] == 'guest':
+        show_menu(['Каталог', 'Корзина', 'Заказы', 'Выйти из аккаунта'])
 
 
 def show_catalog(catalog):
@@ -96,38 +106,50 @@ def show_catalog(catalog):
     show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'])
 
 
-def update_guest_catalog(catalog, currentProduct):
+def change_cart_product_value(productName, newProductAmount):
+    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
+        orders = json.load(orders_r)
+    for order in orders['orders']:
+        if order['user'] == currentUser['login'] and order['status'] == 1:
+            for product in order['products']:
+                if product['product_name'] == productName and newProductAmount != 0:
+                    product['amount'] = newProductAmount
+    with open('orders.json', 'w', encoding='UTF-8') as orders_w:
+        json.dump(orders, orders_w, indent=2, ensure_ascii=False)
+
+
+def update_guest_catalog(catalog, currentRow, currentColumn):
     os.system("cls")
     print(f'Приветствуем, {currentUser["name"]}')
+    print('Для управления каталогом используются стрелки клавиатуры')
+    print('Для выхода из каталога нажмите "q"')
     for product in enumerate(catalog['products']):
         print('%-15s Price: %-4d Количество: %-4d' % (product[1]['product_name'], product[1]['price'], product[1]['amount']), end='')
-        if currentProduct == product[0] + 1:
-            print('< 0 >')
+        if currentRow == product[0] + 1:
+
+            if currentColumn != get_cart_product_amount(product[1]["product_name"]):
+                change_cart_product_value(product[1]["product_name"], currentColumn)
+            print(f'< {get_cart_product_amount(product[1]["product_name"])} >')
         else:
-            print('  0  ')
+            print(f'  {get_cart_product_amount(product[1]["product_name"])}  ')
 
 
-def show_guest_catalog(catalog):
-    currentRow = 1
-    pressedKey = None
-    update_guest_catalog(catalog, currentRow)
-    while pressedKey != 113:  # q
-        pressedKey = None
-        while pressedKey is None:
-            pressedKey = ord(msvcrt.getch())
-            # down
-            if pressedKey == 80 and currentRow < len(catalog['products']):
-                currentRow += 1
-            # up
-            elif pressedKey == 72 and currentRow > 1:
-                currentRow -= 1
-            # # right
-            # elif pressedKey == 77 and currentColumn < 2:
-            #     currentColumn += 1
-            # # left
-            # elif pressedKey == 75 and currentColumn > 1:
-            #     currentColumn -= 1
-            update_guest_catalog(catalog, currentRow)
+def get_cart():
+    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
+        orders = json.load(orders_r)
+    for order in orders['orders']:
+        if order['user'] == currentUser['login'] and order['status'] == 1:
+            return order['products']
+    return None
+
+
+def get_cart_product_amount(product_name):
+    cart = get_cart()
+    if cart:
+        for product in cart:
+            if product['product_name'] == product_name:
+                return product['amount']
+    return 0
 
 
 def view_catalog():
@@ -136,9 +158,9 @@ def view_catalog():
     if currentUser == {}:
         show_catalog(catalog)
     elif currentUser['role'] == 'guest':
-        show_guest_catalog(catalog)
+        show_login_catalog(catalog)
     elif currentUser['role'] == 'admin':
-        show_admin_catalog(catalog)
+        show_login_catalog(catalog)
 
 
 def authorize():
