@@ -5,18 +5,16 @@
       "user": "Max",
       "date": "12.05.2020",
       "status": 1,
-      "products": [
-        {
-          "Огурцы": "Огурцы",
+      "products": {
+        "Огурцы": {
           "price": 120,
-          "amount": 2
+          "amount": 1
         },
-        {
-          "product_name": "Огурцы",
+        "Томаты": {
           "price": 120,
-          "amount": 2
+          "amount": 4
         }
-      ]
+      }
     }
   ]
 }

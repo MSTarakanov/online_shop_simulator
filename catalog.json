@@ -1,19 +1,16 @@
 {
-  "products": [
-    {
-      "product_name": "Огурцы",
+  "products": {
+    "Огурцы": {
       "price": 120,
-      "amount": 15
+      "amount": 13
     },
-    {
-      "product_name": "Том",
+    "Томаты": {
       "price": 60,
       "amount": 3
     },
-    {
-      "product_name": "Карт",
-      "price": 50,
-      "amount": 5
+    "Картофель": {
+      "price": 25,
+      "amount": 7
     }
-  ]
+  }
 }
