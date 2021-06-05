@@ -1,4 +1,5 @@
 # подключим нужные библиотеки
+import json
 import os
 import msvcrt
 import cursor
@@ -22,17 +23,16 @@ def update_admin_catalog(catalog, currentRow, currentColumn):
     for product in enumerate(catalog['products']):
         print('%-15s' % (product[1]['product_name']), end='')
         if currentColumn == 1 and currentRow == product[0] + 1:
-            print('\033[31mPrice: %-4d\033[0m' % (product[1]['price']), end='')
+            print('\033[31mЦена: %-4d\033[0m' % (product[1]['price']), end='')
         else:
-            print('Price: %-4d' % (product[1]['price']), end='')
+            print('Цена: %-4d' % (product[1]['price']), end='')
         if currentColumn == 2 and currentRow == product[0] + 1:
-            print('\033[31mAmount: %d\033[0m' % (product[1]['amount']))
+            print('\033[31mКоличество: %d\033[0m' % (product[1]['amount']))
         else:
-            print('Amount: %d' % (product[1]['amount']))
+            print('Количество: %d' % (product[1]['amount']))
 
 
 def get_value():
-    newValue = ""
     while True:
         newValue = input('Введите новое значение: ')
         try:
@@ -50,9 +50,9 @@ def update_catalog(catalog, currentRow, currentColumn):
         catalog['products'][currentRow]['price'] = newValue
     elif currentColumn == 2:
         catalog['products'][currentRow]['amount'] = newValue
-    with open('catalog.json', 'w') as catalog_w:
-        json.dump(catalog, catalog_w, indent=2)
-    with open('catalog.json', 'r') as catalog_r:
+    with open('catalog.json', 'w', encoding='UTF-8') as catalog_w:
+        json.dump(catalog, catalog_w, indent=2, ensure_ascii=False)
+    with open('catalog.json', 'r', encoding='UTF-8') as catalog_r:
         newCatalog = json.load(catalog_r)
     return newCatalog
 
@@ -96,20 +96,53 @@ def show_catalog(catalog):
     show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'])
 
 
+def update_guest_catalog(catalog, currentProduct):
+    os.system("cls")
+    print(f'Приветствуем, {currentUser["name"]}')
+    for product in enumerate(catalog['products']):
+        print('%-15s Price: %-4d Количество: %-4d' % (product[1]['product_name'], product[1]['price'], product[1]['amount']), end='')
+        if currentProduct == product[0] + 1:
+            print('< 0 >')
+        else:
+            print('  0  ')
+
+
+def show_guest_catalog(catalog):
+    currentRow = 1
+    pressedKey = None
+    update_guest_catalog(catalog, currentRow)
+    while pressedKey != 113:  # q
+        pressedKey = None
+        while pressedKey is None:
+            pressedKey = ord(msvcrt.getch())
+            # down
+            if pressedKey == 80 and currentRow < len(catalog['products']):
+                currentRow += 1
+            # up
+            elif pressedKey == 72 and currentRow > 1:
+                currentRow -= 1
+            # # right
+            # elif pressedKey == 77 and currentColumn < 2:
+            #     currentColumn += 1
+            # # left
+            # elif pressedKey == 75 and currentColumn > 1:
+            #     currentColumn -= 1
+            update_guest_catalog(catalog, currentRow)
+
 
 def view_catalog():
-    with open('catalog.json', 'r') as catalog_r:
+    with open('catalog.json', 'r', encoding='UTF-8') as catalog_r:
         catalog = json.load(catalog_r)
     if currentUser == {}:
         show_catalog(catalog)
     elif currentUser['role'] == 'guest':
-        print('catalog for guest')
+        show_guest_catalog(catalog)
     elif currentUser['role'] == 'admin':
         show_admin_catalog(catalog)
 
 
 def authorize():
-    with open('users.json', 'r') as users_r:
+    with open('users.json', 'r', encoding='UTF-8') as users_r:
         usersFile = json.load(users_r)
     allLogins = list(map(lambda x: x['login'], usersFile['users']))
     login = input("Введите логин: ")
