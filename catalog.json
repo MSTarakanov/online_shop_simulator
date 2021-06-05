@@ -1,19 +1,19 @@
 {
   "products": [
     {
-      "product_name": "cucumber",
+      "product_name": "Огурцы",
       "price": 120,
       "amount": 11
     },
     {
-      "product_name": "tomato",
-      "price": 90,
-      "amount": 3
+      "product_name": "Томаты",
+      "price": 70,
+      "amount": 2
     },
     {
-      "product_name": "potato",
-      "price": 65,
-      "amount": 7
+      "product_name": "Картошка",
+      "price": 50,
+      "amount": 5
     }
   ]
 }

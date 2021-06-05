@@ -1,13 +1,13 @@
 {
   "users": [
     {
-      "name": "Lera",
+      "name": "Валерия",
       "login": "admin",
       "password": "admin",
       "role": "admin"
     },
     {
-      "name": "Max",
+      "name": "Максим",
       "login": "Max",
       "password": "123",
       "role": "guest"
