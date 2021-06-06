@@ -3,7 +3,7 @@ import json
 import os
 import msvcrt
 import cursor
-
+import datetime as dt
 
 # подключим функции
 from client import *
@@ -37,7 +37,7 @@ def update_guest_catalog(catalog, currentRow, currentColumn):
         print('%-15s Price: %-4d Количество: %-4d' % (product, values['price'], values['amount']), end='')
         if currentRow == product:
             if currentColumn != get_cart_product_amount(product):
-                change_cart_product_value(product, currentColumn)
+                change_cart_product_value(product, currentColumn, catalog['products'][product]['price'])
             print(f'< {get_cart_product_amount(product)} >')
         else:
             print(f'  {get_cart_product_amount(product)}  ')
@@ -94,7 +94,7 @@ def show_login_catalog(catalog):
                     currentColumn = get_cart_product_amount(currentRow)
             # right
             elif pressedKey == 77 and ((currentUser['role'] == 'admin' and currentColumn < 2) or
-                                        currentUser['role'] == 'guest'):
+                 currentUser['role'] == 'guest' and currentColumn < catalog['products'][currentRow]['amount']):
                 currentColumn += 1
             # left
             elif pressedKey == 75 and ((currentUser['role'] == 'admin' and currentColumn > 1) or
@@ -116,7 +116,6 @@ def show_login_catalog(catalog):
 def show_catalog(catalog):
     print('Для возможности взаимодействия с каталогом авторизуйтесь')
     print('Для выхода из каталога нажмите любую клавишу')
-    pressedKey = None
     for product, values in catalog['products'].items():
         print('%-15s Цена: %-4d Количество: %d' % (product, values['price'], values['amount']))
     while not msvcrt.getch():
@@ -124,19 +123,27 @@ def show_catalog(catalog):
     show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'])
 
 
-def change_cart_product_value(productName, newProductAmount):
+def change_cart_product_value(productName, newProductAmount, productPrice):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
+    if not any(order['user'] == currentUser['login'] and order['status'] == 1 for order in orders['orders'])\
+            and newProductAmount != 0:
+        orders['orders'].append({"id": 123, "user": currentUser['login'],
+                                 "date": dt.datetime.now().strftime('%d.%m.%y %H:%M'), "status": 1, "products": {}})
     for order in orders['orders']:
         if order['user'] == currentUser['login'] and order['status'] == 1:
+            if productName not in order['products']:
+                order['products'][productName] = {'price': productPrice, 'amount': newProductAmount}
             for product, values in order['products'].items():
                 if product == productName and newProductAmount != 0:
                     values['amount'] = newProductAmount
+                elif product == productName and newProductAmount == 0:
+                    order['products'].pop(product)
+                    if order['products'] == {}:
+                        orders['orders'].remove(order)
+                    break
     with open('orders.json', 'w', encoding='UTF-8') as orders_w:
         json.dump(orders, orders_w, indent=2, ensure_ascii=False)
-
-
-
 
 
 def get_cart():
@@ -162,9 +169,7 @@ def view_catalog():
         catalog = json.load(catalog_r)
     if currentUser == {}:
         show_catalog(catalog)
-    elif currentUser['role'] == 'guest':
-        show_login_catalog(catalog)
-    elif currentUser['role'] == 'admin':
+    elif currentUser['role'] == 'guest' or currentUser['role'] == 'admin':
         show_login_catalog(catalog)
 
 
@@ -240,10 +245,11 @@ def show_menu(listOfPoints):
 def main():
     cursor.hide()
     show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'])
-    # with open('catalog.json', 'r', encoding='UTF-8') as catalog_r:
-    #     catalog = json.load(catalog_r)
-    # for product in enumerate(list(catalog['products'].keys())):
-    #     print(product)
+    # with open('orders.json', 'r', encoding='UTF-8') as orders_r:
+    #     orders = json.load(orders_r)
+    # if True in (order['user'] == 'Max' and order['status'] == 3 for order in orders['orders']):
+    #     print(orders['orders'])
     cursor.show()
+
 
 main()

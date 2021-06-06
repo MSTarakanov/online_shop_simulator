@@ -3,16 +3,12 @@
     {
       "id": 0,
       "user": "Max",
-      "date": "12.05.2020",
-      "status": 1,
+      "date": "12.05.20",
+      "status": 2,
       "products": {
-        "Огурцы": {
-          "price": 120,
-          "amount": 1
-        },
         "Томаты": {
-          "price": 120,
-          "amount": 4
+          "price": 60,
+          "amount": 1
         }
       }
     }
