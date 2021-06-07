@@ -123,12 +123,20 @@ def show_catalog(catalog):
     show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'])
 
 
+def get_max_id(orders):
+    max_id = 0
+    for order in orders['orders']:
+        if order['id'] > max_id:
+            max_id = order['id']
+    return max_id
+
+
 def change_cart_product_value(productName, newProductAmount, productPrice):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
     if not any(order['user'] == currentUser['login'] and order['status'] == 1 for order in orders['orders'])\
             and newProductAmount != 0:
-        orders['orders'].append({"id": 123, "user": currentUser['login'],
+        orders['orders'].append({"id": get_max_id(orders) + 1, "user": currentUser['login'],
                                  "date": dt.datetime.now().strftime('%d.%m.%y %H:%M'), "status": 1, "products": {}})
     for order in orders['orders']:
         if order['user'] == currentUser['login'] and order['status'] == 1:

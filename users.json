@@ -11,6 +11,12 @@
       "login": "Max",
       "password": "123",
       "role": "guest"
+    },
+    {
+      "name": "Настя",
+      "login": "Nastya",
+      "password": "Max",
+      "role": "guest"
     }
   ]
 }
