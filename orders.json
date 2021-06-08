@@ -27,6 +27,34 @@
           "amount": 1
         }
       }
+    },
+    {
+      "id": 2,
+      "user": "Max",
+      "date": "08.06.21 05:44",
+      "status": 2,
+      "products": {
+        "Картофель": {
+          "price": 25,
+          "amount": 1
+        },
+        "Томаты": {
+          "price": 70,
+          "amount": 1
+        }
+      }
+    },
+    {
+      "id": 3,
+      "user": "Max",
+      "date": "08.06.21 05:44",
+      "status": 1,
+      "products": {
+        "Картофель": {
+          "price": 25,
+          "amount": 1
+        }
+      }
     }
   ]
 }

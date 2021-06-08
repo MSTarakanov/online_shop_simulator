@@ -52,10 +52,12 @@ def update_guest_catalog(catalog, currentRow, currentColumn):
         print('Количество товаров на складе изменилось, некоторые товары больше недоступны')
         print('Уменьшите количество товаров в корзине до допустимого предела!')
     else:
-        if currentRow != 'ok_btn':
-            print('Сумма заказа: %-5d            Подтвердить и оплатить' % cart_sum())
-        else:
-            print('Сумма заказа: %-5d            \033[32mПодтвердить и оплатить\033[0m' % cart_sum())
+        if cart_sum() != 0:
+            if currentRow != 'ok_btn':
+                print('Сумма заказа: %-5d            Подтвердить и оплатить' % cart_sum())
+            else:
+                print('Сумма заказа: %-5d            \033[32mПодтвердить и оплатить\033[0m' % cart_sum())
+
 
 def is_amount_error(catalog):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
@@ -121,12 +123,12 @@ def show_login_catalog(catalog):
             # down
             if pressedKey == 80 and currentRow != 'ok_btn':
                 if (list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) - 1 and currentUser['role'] == 'admin') or \
-                   (list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) and currentUser['role'] == 'guest'):
+                   (list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) - int(cart_sum() == 0) and currentUser['role'] == 'guest'):
                     try:
                         currentRow = list(catalog['products'].keys())[list(catalog['products'].keys()).index(currentRow) + 1]
                     except:
                         currentRow = 'ok_btn'
-                    if currentUser['role'] == 'guest':
+                    if currentUser['role'] == 'guest' and currentRow != 'ok_btn':
                         currentColumn = get_cart_product_amount(currentRow)
             # up
             elif pressedKey == 72 and currentRow != 'ok_btn' and list(catalog['products'].keys()).index(currentRow) > 0:
@@ -185,6 +187,7 @@ def get_max_id(orders):
         if order['id'] > max_id:
             max_id = order['id']
     return max_id
+
 
 def is_cart_exist(orders):
     if any(order['user'] == currentUser['login'] and order['status'] == 1 for order in orders['orders']):
