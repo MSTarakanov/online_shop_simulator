@@ -33,14 +33,37 @@ def update_guest_catalog(catalog, currentRow, currentColumn):
     print(f'Приветствуем, {currentUser["name"]}')
     print('Для управления каталогом используются стрелки клавиатуры')
     print('Для выхода из каталога нажмите "q"')
+    print('%66s' % 'Количество в корзине')
     for product, values in catalog['products'].items():
-        print('%-15s Price: %-4d Количество: %-4d' % (product, values['price'], values['amount']), end='')
+        print('%-15s Цена: %-4d  Количество на складе: %-4d' % (product, values['price'], values['amount']), end='')
         if currentRow == product:
             if currentColumn != get_cart_product_amount(product):
                 change_cart_product_value(product, currentColumn, catalog['products'][product]['price'])
-            print(f'< {get_cart_product_amount(product)} >')
+            if catalog['products'][product]['amount'] < get_cart_product_amount(product):
+                print(f'\033[32m<\033[0m \033[31m{get_cart_product_amount(product)}\033[0m \033[32m>\033[0m')
+            else:
+                print(f'\033[32m<\033[0m {get_cart_product_amount(product)} \033[32m>\033[0m')
         else:
-            print(f'  {get_cart_product_amount(product)}  ')
+            if catalog['products'][product]['amount'] < get_cart_product_amount(product):
+                print(f'  \033[31m{get_cart_product_amount(product)}\033[0m  ')
+            else:
+                print(f'  {get_cart_product_amount(product)}  ')
+    if is_amount_error(catalog):
+        print('Количество товаров на складе изменилось, некоторые товары больше недоступны')
+        print('Уменьшите количество товаров в корзине до допустимого предела!')
+    else:
+        print('Сумма заказа: %-5d            Подтвердить и оплатить' % cart_sum())
+
+
+def is_amount_error(catalog):
+    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
+        orders = json.load(orders_r)
+    if is_cart_exist(orders):
+        cart = get_cart(orders)
+        if any(catalog['products'][product]['amount'] < get_cart_product_amount(product) for product in
+               cart.keys()):
+            return True
+    return False
 
 
 def get_value():
@@ -54,17 +77,28 @@ def get_value():
     return newValue
 
 
+def update_cart_prices(product_to_update, newPrice):
+    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
+        orders = json.load(orders_r)
+    for order in orders['orders']:
+        if order['status'] == 1:
+            for product, values in order['products'].items():
+                if product == product_to_update:
+                    values['price'] = newPrice
+    with open('orders.json', 'w', encoding='UTF-8') as orders_w:
+        json.dump(orders, orders_w, indent=2, ensure_ascii=False)
+
+
 def change_catalog_value(catalog, currentRow, currentColumn):
     newValue = get_value()
     if currentColumn == 1:
         catalog['products'][currentRow]['price'] = newValue
+        update_cart_prices(currentRow, newValue)
     elif currentColumn == 2:
         catalog['products'][currentRow]['amount'] = newValue
     with open('catalog.json', 'w', encoding='UTF-8') as catalog_w:
         json.dump(catalog, catalog_w, indent=2, ensure_ascii=False)
-    with open('catalog.json', 'r', encoding='UTF-8') as catalog_r:
-        newCatalog = json.load(catalog_r)
-    return newCatalog
+    return catalog
 
 
 def show_login_catalog(catalog):
@@ -130,12 +164,15 @@ def get_max_id(orders):
             max_id = order['id']
     return max_id
 
+def is_cart_exist(orders):
+    if any(order['user'] == currentUser['login'] and order['status'] == 1 for order in orders['orders']):
+        return True
+    return False
 
 def change_cart_product_value(productName, newProductAmount, productPrice):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
-    if not any(order['user'] == currentUser['login'] and order['status'] == 1 for order in orders['orders'])\
-            and newProductAmount != 0:
+    if not is_cart_exist(orders) and newProductAmount != 0:
         orders['orders'].append({"id": get_max_id(orders) + 1, "user": currentUser['login'],
                                  "date": dt.datetime.now().strftime('%d.%m.%y %H:%M'), "status": 1, "products": {}})
     for order in orders['orders']:
@@ -154,9 +191,7 @@ def change_cart_product_value(productName, newProductAmount, productPrice):
         json.dump(orders, orders_w, indent=2, ensure_ascii=False)
 
 
-def get_cart():
-    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
-        orders = json.load(orders_r)
+def get_cart(orders):
     for order in orders['orders']:
         if order['user'] == currentUser['login'] and order['status'] == 1:
             return order['products']
@@ -164,7 +199,9 @@ def get_cart():
 
 
 def get_cart_product_amount(product_name):
-    cart = get_cart()
+    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
+        orders = json.load(orders_r)
+    cart = get_cart(orders)
     if cart:
         for product, values in cart.items():
             if product == product_name:
@@ -210,10 +247,41 @@ def logout():
     show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'])
 
 
+def cart_sum():
+    sum = 0
+    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
+        orders = json.load(orders_r)
+    if is_cart_exist(orders):
+        cart = get_cart(orders)
+        for values in cart.values():
+            sum += values['price'] * values['amount']
+    return sum
+
+
+# def update_cart():
+#     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
+#         orders = json.load(orders_r)
+#     if is_cart_exist(orders):
+#         cart = get_cart(orders)
+#         for product, values in cart.items():
+#             print('%-15s Цена: %-4d Количество: %d' % (product, values['price'], values['amount']))
+#         print('Сумма заказа: %-5d Подтвердить и оплатить' % cart_sum(cart))
+#     else:
+#         print('Ваша корзина пуста! Добавьте товары через каталог')
+#
+#
+#
+# def show_cart():
+#     update_cart()
+
+
+
+
 menuFunctions = {'Регистрация': registration,
                  'Каталог': view_catalog,
                  'Авторизация': authorize,
                  'Выйти из аккаунта': logout,
+                 # 'Корзина': show_cart,
                  'Выйти': exit}
 
 

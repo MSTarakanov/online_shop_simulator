@@ -2,11 +2,11 @@
   "products": {
     "Огурцы": {
       "price": 120,
-      "amount": 13
+      "amount": 2
     },
     "Томаты": {
       "price": 70,
-      "amount": 5
+      "amount": 1
     },
     "Картофель": {
       "price": 25,
