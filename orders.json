@@ -16,12 +16,8 @@
       "id": 1,
       "user": "Max",
       "date": "08.06.21 00:19",
-      "status": 1,
+      "status": 2,
       "products": {
-        "Картофель": {
-          "price": 25,
-          "amount": 3
-        },
         "Огурцы": {
           "price": 120,
           "amount": 2

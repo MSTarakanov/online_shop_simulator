@@ -52,8 +52,10 @@ def update_guest_catalog(catalog, currentRow, currentColumn):
         print('Количество товаров на складе изменилось, некоторые товары больше недоступны')
         print('Уменьшите количество товаров в корзине до допустимого предела!')
     else:
-        print('Сумма заказа: %-5d            Подтвердить и оплатить' % cart_sum())
-
+        if currentRow != 'ok_btn':
+            print('Сумма заказа: %-5d            Подтвердить и оплатить' % cart_sum())
+        else:
+            print('Сумма заказа: %-5d            \033[32mПодтвердить и оплатить\033[0m' % cart_sum())
 
 def is_amount_error(catalog):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
@@ -117,26 +119,36 @@ def show_login_catalog(catalog):
         while pressedKey is None:
             pressedKey = ord(msvcrt.getch())
             # down
-            if pressedKey == 80 and list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) - 1:
-                currentRow = list(catalog['products'].keys())[list(catalog['products'].keys()).index(currentRow) + 1]
-                if currentUser['role'] == 'guest':
-                    currentColumn = get_cart_product_amount(currentRow)
+            if pressedKey == 80 and currentRow != 'ok_btn':
+                if (list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) - 1 and currentUser['role'] == 'admin') or \
+                   (list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) and currentUser['role'] == 'guest'):
+                    try:
+                        currentRow = list(catalog['products'].keys())[list(catalog['products'].keys()).index(currentRow) + 1]
+                    except:
+                        currentRow = 'ok_btn'
+                    if currentUser['role'] == 'guest':
+                        currentColumn = get_cart_product_amount(currentRow)
             # up
-            elif pressedKey == 72 and list(catalog['products'].keys()).index(currentRow) > 0:
+            elif pressedKey == 72 and currentRow != 'ok_btn' and list(catalog['products'].keys()).index(currentRow) > 0:
                 currentRow = list(catalog['products'].keys())[list(catalog['products'].keys()).index(currentRow) - 1]
                 if currentUser['role'] == 'guest':
                     currentColumn = get_cart_product_amount(currentRow)
+            elif pressedKey == 72 and currentRow == 'ok_btn':
+                currentRow = list(catalog['products'].keys())[-1]
             # right
-            elif pressedKey == 77 and ((currentUser['role'] == 'admin' and currentColumn < 2) or
+            elif pressedKey == 77 and currentRow != 'ok_btn' and ((currentUser['role'] == 'admin' and currentColumn < 2) or
                  currentUser['role'] == 'guest' and currentColumn < catalog['products'][currentRow]['amount']):
                 currentColumn += 1
             # left
-            elif pressedKey == 75 and ((currentUser['role'] == 'admin' and currentColumn > 1) or
+            elif pressedKey == 75 and currentRow != 'ok_btn' and ((currentUser['role'] == 'admin' and currentColumn > 1) or
                                        (currentUser['role'] == 'guest' and currentColumn > 0)):
                 currentColumn -= 1
             # enter
             elif pressedKey == 13:
-                catalog = change_catalog_value(catalog, currentRow, currentColumn)
+                if currentUser['role'] == 'admin':
+                    catalog = change_catalog_value(catalog, currentRow, currentColumn)
+                elif currentUser['role'] == 'guest' and currentRow == 'ok_btn':
+                    accept_order()
             if currentUser['role'] == 'admin':
                 update_admin_catalog(catalog, currentRow, currentColumn)
             elif currentUser['role'] == 'guest':
@@ -145,6 +157,16 @@ def show_login_catalog(catalog):
         show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'])
     elif currentUser['role'] == 'guest':
         show_menu(['Каталог', 'Корзина', 'Заказы', 'Выйти из аккаунта'])
+
+
+def accept_order():
+    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
+        orders = json.load(orders_r)
+    for order in orders['orders']:
+        if order['status'] == 1:
+            order['status'] = 2
+    with open('orders.json', 'w', encoding='UTF-8') as orders_w:
+        json.dump(orders, orders_w, indent=2, ensure_ascii=False)
 
 
 def show_catalog(catalog):
