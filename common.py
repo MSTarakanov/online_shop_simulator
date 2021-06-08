@@ -52,11 +52,11 @@ def update_guest_catalog(catalog, currentRow, currentColumn):
         print('Количество товаров на складе изменилось, некоторые товары больше недоступны')
         print('Уменьшите количество товаров в корзине до допустимого предела!')
     else:
-        if cart_sum() != 0:
+        if get_cart_sum() != 0:
             if currentRow != 'ok_btn':
-                print('Сумма заказа: %-5d            Подтвердить и оплатить' % cart_sum())
+                print('Сумма заказа: %-5d            Подтвердить и оплатить' % get_cart_sum())
             else:
-                print('Сумма заказа: %-5d            \033[32mПодтвердить и оплатить\033[0m' % cart_sum())
+                print('Сумма заказа: %-5d            \033[32mПодтвердить и оплатить\033[0m' % get_cart_sum())
 
 
 def is_amount_error(catalog):
@@ -77,7 +77,7 @@ def get_value():
             newValue = int(newValue)
             break
         except ValueError:
-            print("That's not an int!")
+            print("Введите целое число!")
     return newValue
 
 
@@ -123,7 +123,7 @@ def show_login_catalog(catalog):
             # down
             if pressedKey == 80 and currentRow != 'ok_btn':
                 if (list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) - 1 and currentUser['role'] == 'admin') or \
-                   (list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) - int(cart_sum() == 0) and currentUser['role'] == 'guest'):
+                   (list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) - int(get_cart_sum() == 0) and currentUser['role'] == 'guest'):
                     try:
                         currentRow = list(catalog['products'].keys())[list(catalog['products'].keys()).index(currentRow) + 1]
                     except:
@@ -150,7 +150,8 @@ def show_login_catalog(catalog):
                 if currentUser['role'] == 'admin':
                     catalog = change_catalog_value(catalog, currentRow, currentColumn)
                 elif currentUser['role'] == 'guest' and currentRow == 'ok_btn':
-                    accept_order()
+                    accept_order(catalog)
+                    currentRow = list(catalog['products'].keys())[-1]
             if currentUser['role'] == 'admin':
                 update_admin_catalog(catalog, currentRow, currentColumn)
             elif currentUser['role'] == 'guest':
@@ -158,17 +159,29 @@ def show_login_catalog(catalog):
     if currentUser['role'] == 'admin':
         show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'])
     elif currentUser['role'] == 'guest':
-        show_menu(['Каталог', 'Корзина', 'Заказы', 'Выйти из аккаунта'])
+        show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'])
 
-
-def accept_order():
+def change_cart_status():
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
     for order in orders['orders']:
         if order['status'] == 1:
             order['status'] = 2
+            user_order = order
     with open('orders.json', 'w', encoding='UTF-8') as orders_w:
         json.dump(orders, orders_w, indent=2, ensure_ascii=False)
+    return user_order
+
+
+def update_products_amount(user_order, catalog):
+    for product, values in user_order['products'].items():
+        catalog['products'][product]['amount'] -= values['amount']
+    with open('catalog.json', 'w', encoding='UTF-8') as catalog_w:
+        json.dump(catalog, catalog_w, indent=2, ensure_ascii=False)
+
+def accept_order(catalog):
+    user_order = change_cart_status()
+    update_products_amount(user_order, catalog)
 
 
 def show_catalog(catalog):
@@ -193,6 +206,7 @@ def is_cart_exist(orders):
     if any(order['user'] == currentUser['login'] and order['status'] == 1 for order in orders['orders']):
         return True
     return False
+
 
 def change_cart_product_value(productName, newProductAmount, productPrice):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
@@ -243,6 +257,18 @@ def view_catalog():
         show_login_catalog(catalog)
 
 
+def registration():
+    newName = input("Введите свое имя: ")
+    newLogin = input("Введите свой логин: ")
+    newPassword = input("Введите свой пароль: ")
+    newPasswordConfirm = input("Подтвердите пароль: ")
+    while newPassword != newPasswordConfirm:
+        newPassword = input("Введите свой пароль еще раз: ")
+        newPasswordConfirm = input("Подтвердите пароль: ")
+    write_to_users_json(newName, newLogin, newPassword)
+    show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'])
+
+
 def authorize():
     with open('users.json', 'r', encoding='UTF-8') as users_r:
         usersFile = json.load(users_r)
@@ -260,10 +286,7 @@ def authorize():
                 password = input("Введите пароль: ")
             global currentUser
             currentUser = user
-    if currentUser['role'] == 'guest':
-        show_menu(['Каталог', 'Корзина', 'Заказы', 'Выйти из аккаунта'])
-    elif currentUser['role'] == 'admin':
-        show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'])
+    show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'])
 
 
 def logout():
@@ -272,41 +295,97 @@ def logout():
     show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'])
 
 
-def cart_sum():
-    sum = 0
+def get_cart_sum():
+    cart_sum = 0
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
     if is_cart_exist(orders):
         cart = get_cart(orders)
         for values in cart.values():
-            sum += values['price'] * values['amount']
-    return sum
+            cart_sum += values['price'] * values['amount']
+    return cart_sum
 
 
-# def update_cart():
-#     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
-#         orders = json.load(orders_r)
-#     if is_cart_exist(orders):
-#         cart = get_cart(orders)
-#         for product, values in cart.items():
-#             print('%-15s Цена: %-4d Количество: %d' % (product, values['price'], values['amount']))
-#         print('Сумма заказа: %-5d Подтвердить и оплатить' % cart_sum(cart))
-#     else:
-#         print('Ваша корзина пуста! Добавьте товары через каталог')
-#
-#
-#
-# def show_cart():
-#     update_cart()
+def get_order_products_amount(order):
+    order_products_amount = 0
+    for values in order['products'].values():
+        order_products_amount += values['amount']
+    return order_products_amount
 
 
+def get_order_sum(order):
+    order_sum = 0
+    for values in order['products'].values():
+        order_sum += values['amount'] * values['price']
+    return order_sum
+
+
+def update_orders(currentRow):
+    os.system("cls")
+    user_orders_list = []
+    print('Ваши заказы')
+    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
+        orders = json.load(orders_r)
+    for order in orders['orders']:
+        if (currentUser['role'] == 'guest' and order['user'] == currentUser['login'] and order['status'] == 2) or \
+           (currentUser['role'] == 'admin' and order['status'] != 1):
+            user_orders_list.append(order)
+    for order in user_orders_list:
+        if currentRow == user_orders_list.index(order):
+            print('\033[32m', end='')
+        print('Номер заказа: %06d Дата и время: %s Количество товаров: %-3d Сумма: %-5d Статус: %s\033[0m' %
+              (order['id'], order['date'], get_order_products_amount(order), get_order_sum(order), order['status']))
+    return user_orders_list
+
+
+def show_guest_order(order, user_order_list):
+    os.system("cls")
+    print('Номер заказа %06d' % order['id'])
+    print('Дата и время создания заказа: %s' % order['date'])
+    print('Количество товаров: %s' % get_order_products_amount(order))
+    print('Товары:')
+    for product, values in order['products'].items():
+        print('%-15s Цена: %-4d Количество: %d' % (product, values['price'], values['amount']))
+    print('Итоговая сумма заказа: %s' % get_order_sum(order))
+    print('Статус заказа: %s' % order['status'])
+    while not msvcrt.getch():
+        pass
+    view_orders(user_order_list.index(order))
+
+
+def  show_admin_order(order, user_orders_list):
+    os.system("cls")
+
+
+def view_orders(currentRow=0):
+    user_orders_list = update_orders(currentRow)
+    pressedKey = None
+    while pressedKey != 113 and pressedKey != 13:  # q
+        pressedKey = None
+        while pressedKey is None:
+            pressedKey = ord(msvcrt.getch())
+            # down
+            if pressedKey == 80 and currentRow < len(user_orders_list) - 1:
+                currentRow += 1
+                user_orders_list = update_orders(currentRow)
+            # up
+            if pressedKey == 72 and currentRow > 0:
+                currentRow -= 1
+                user_orders_list = update_orders(currentRow)
+            if pressedKey == 13:
+                if currentUser['role'] == 'guest':
+                    show_guest_order(user_orders_list[currentRow], user_orders_list)
+                elif currentUser['role'] == 'admin':
+                    show_admin_order(user_orders_list[currentRow], user_orders_list)
+
+    show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'])
 
 
 menuFunctions = {'Регистрация': registration,
                  'Каталог': view_catalog,
                  'Авторизация': authorize,
                  'Выйти из аккаунта': logout,
-                 # 'Корзина': show_cart,
+                 'Заказы': view_orders,
                  'Выйти': exit}
 
 
