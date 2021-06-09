@@ -358,7 +358,10 @@ def get_order_sum(order):
 def update_orders(currentRow):
     os.system("cls")
     user_orders_list = []
-    print('Ваши заказы')
+    print('Выберите заказ с помощью стрелок вверх/вниз и клавиши Enter')
+    print('Для выхода нажмите "q"')
+    if currentUser['role'] == role.GUEST:
+        print('Ваши заказы:')
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
     for order in orders:
@@ -366,7 +369,10 @@ def update_orders(currentRow):
            (currentUser['role'] == role.ADMIN and order['status'] != status.CREATED):
             user_orders_list.append(order)
     if len(user_orders_list) == 0:
-        print('Вы еще не совершили ни одного заказа, пройдите в каталог!')
+        if currentUser['role'] == role.GUEST:
+            print('Вы еще не совершили ни одного заказа, пройдите в каталог!')
+        elif currentUser['role'] == role.ADMIN:
+            print('Посетители еще не сделали ни одного заказа')
     for order in user_orders_list:
         if currentRow == user_orders_list.index(order):
             print('\033[32m', end='')
@@ -376,7 +382,7 @@ def update_orders(currentRow):
 
 
 def get_status():
-    return show_menu(['Отправлен', 'Доставлен'])
+    return show_menu([status.PAID, status.SENT, status.DELIVERED])
 
 
 def change_order_status(order_to_update):
@@ -413,7 +419,9 @@ def get_order_index(find_to_order, user_order_list):
 
 def update_order(order):
     os.system("cls")
+    print('Для выхода из заказа нажмите "q"')
     if currentUser['role'] == role.ADMIN:
+        print('Для изменения статуса заказа нажмите Enter и выберите статус')
         print('Пользователь: %s' % order['user'])
     print('Номер заказа %06d' % order['id'])
     print('Дата и время создания заказа: %s' % order['date'])
@@ -422,7 +430,10 @@ def update_order(order):
     for product, values in order['products'].items():
         print('%-15s Цена: %-4d Количество: %d' % (product, values['price'], values['amount']))
     print('Итоговая сумма заказа: %s' % get_order_sum(order))
-    print('Статус заказа: %s' % order['status'])
+    if currentUser['role'] == role.GUEST:
+        print('Статус заказа: %s' % order['status'])
+    elif currentUser['role'] == role.ADMIN:
+        print('Статус заказа: \033[32m%s\033[0m' % order['status'])
 
 
 def view_orders(currentRow=0):
@@ -454,6 +465,9 @@ def delivered_status():
 def sent_status():
     return status.SENT
 
+def paid_status():
+    return  status.PAID
+
 menuFunctions = {'Регистрация': registration,
                  'Каталог': view_catalog,
                  'Авторизация': authorize,
@@ -461,6 +475,7 @@ menuFunctions = {'Регистрация': registration,
                  'Заказы': view_orders,
                  'Доставлен': delivered_status,
                  'Отправлен': sent_status,
+                 'Оплачен': paid_status,
                  'Выйти': exit}
 
 
@@ -506,7 +521,5 @@ def main():
 main()
 
 
-# управляющие RED_TEXT = \033m[0
+# на ку выходит из меню где не надо (добавить флаг в вход функции?) или вездк написать, что выход на ку или забить и никто не заметит
 
-# на ку выходит отовсюду
-# добавить инструкции во все меню
