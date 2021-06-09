@@ -3,7 +3,7 @@
     "id": 0,
     "user": "Max",
     "date": "12.05.20 00:19",
-    "status": 2,
+    "status": "Оплачен",
     "products": {
       "Томаты": {
         "price": 60,
@@ -15,7 +15,7 @@
     "id": 1,
     "user": "Max",
     "date": "08.06.21 00:19",
-    "status": 2,
+    "status": "Отправлен",
     "products": {
       "Огурцы": {
         "price": 120,
@@ -31,7 +31,7 @@
     "id": 2,
     "user": "Max",
     "date": "08.06.21 05:44",
-    "status": 3,
+    "status": "Отправлен",
     "products": {
       "Картофель": {
         "price": 25,
@@ -46,155 +46,11 @@
   {
     "id": 3,
     "user": "Max",
-    "date": "08.06.21 17:12",
-    "status": 2,
+    "date": "09.06.21 03:14",
+    "status": "Создан",
     "products": {
       "Огурцы": {
         "price": 120,
-        "amount": 1
-      },
-      "Томаты": {
-        "price": 70,
-        "amount": 1
-      },
-      "Картофель": {
-        "price": 25,
-        "amount": 2
-      }
-    }
-  },
-  {
-    "id": 4,
-    "user": "Max",
-    "date": "08.06.21 17:14",
-    "status": 4,
-    "products": {
-      "Огурцы": {
-        "price": 90,
-        "amount": 1
-      },
-      "Томаты": {
-        "price": 70,
-        "amount": 1
-      }
-    }
-  },
-  {
-    "id": 5,
-    "user": "Dashko",
-    "date": "08.06.21 18:46",
-    "status": 3,
-    "products": {
-      "Томаты": {
-        "price": 70,
-        "amount": 1
-      },
-      "Картофель": {
-        "price": 25,
-        "amount": 2
-      }
-    }
-  },
-  {
-    "id": 6,
-    "user": "Max",
-    "date": "08.06.21 20:15",
-    "status": 3,
-    "products": {
-      "Картофель": {
-        "price": 25,
-        "amount": 2
-      },
-      "Томаты": {
-        "price": 70,
-        "amount": 1
-      }
-    }
-  },
-  {
-    "id": 7,
-    "user": "Max",
-    "date": "08.06.21 20:15",
-    "status": 4,
-    "products": {
-      "Томаты": {
-        "price": 70,
-        "amount": 1
-      }
-    }
-  },
-  {
-    "id": 8,
-    "user": "Max",
-    "date": "08.06.21 20:15",
-    "status": 4,
-    "products": {
-      "Картофель": {
-        "price": 25,
-        "amount": 1
-      },
-      "Огурцы": {
-        "price": 90,
-        "amount": 1
-      }
-    }
-  },
-  {
-    "id": 9,
-    "user": "Max",
-    "date": "08.06.21 20:15",
-    "status": 3,
-    "products": {
-      "Картофель": {
-        "price": 25,
-        "amount": 1
-      }
-    }
-  },
-  {
-    "id": 10,
-    "user": "Dashko",
-    "date": "08.06.21 20:17",
-    "status": 3,
-    "products": {
-      "Огурцы": {
-        "price": 90,
-        "amount": 1
-      },
-      "Томаты": {
-        "price": 70,
-        "amount": 2
-      },
-      "Картофель": {
-        "price": 25,
-        "amount": 3
-      }
-    }
-  },
-  {
-    "id": 11,
-    "user": "Max",
-    "date": "09.06.21 02:56",
-    "status": 2,
-    "products": {
-      "Огурцы": {
-        "price": 120,
-        "amount": 2
-      },
-      "Томаты": {
-        "price": 70,
-        "amount": 2
-      }
-    }
-  },
-  {
-    "id": 12,
-    "user": "Max",
-    "date": "09.06.21 02:56",
-    "status": 1,
-    "products": {
-      "Картофель": {
-        "price": 25,
         "amount": 1
       }
     }

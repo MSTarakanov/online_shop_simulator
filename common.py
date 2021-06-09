@@ -7,10 +7,10 @@ import datetime as dt
 
 
 class OrderStatus:
-    CREATED = 1
-    PAID = 2
-    SENT = 3
-    DELIVERED = 4
+    CREATED = 'Создан'
+    PAID = 'Оплачен'
+    SENT = 'Отправлен'
+    DELIVERED = 'Доставлен'
 
 
 class Button:
@@ -97,9 +97,12 @@ def get_value():
         newValue = input('Введите новое значение: ')
         try:
             newValue = int(newValue)
+            assert (newValue >= 0)
             break
         except ValueError:
             print("Введите целое число!")
+        except AssertionError:
+            print("Введите положительное число!")
     return newValue
 
 
@@ -359,7 +362,7 @@ def update_orders(currentRow):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
     for order in orders:
-        if (currentUser['role'] == role.GUEST and order['user'] == currentUser['login'] and order['status'] == status.PAID) or \
+        if (currentUser['role'] == role.GUEST and order['user'] == currentUser['login'] and order['status'] != status.CREATED) or \
            (currentUser['role'] == role.ADMIN and order['status'] != status.CREATED):
             user_orders_list.append(order)
     if len(user_orders_list) == 0:
@@ -506,5 +509,4 @@ main()
 # управляющие RED_TEXT = \033m[0
 
 # на ку выходит отовсюду
-# можно установить отрицательное число
-# статус выводится цифрой
+# добавить инструкции во все меню
