@@ -1,22 +1,26 @@
-{
-  "users": [
-    {
-      "name": "Валерия",
-      "login": "admin",
-      "password": "admin",
-      "role": "admin"
-    },
-    {
-      "name": "Максим",
-      "login": "Max",
-      "password": "123",
-      "role": "guest"
-    },
-    {
-      "name": "Настя",
-      "login": "Nastya",
-      "password": "Max",
-      "role": "guest"
-    }
-  ]
-}
+[
+  {
+    "name": "Валерия",
+    "login": "admin",
+    "password": "admin",
+    "role": "admin"
+  },
+  {
+    "name": "Максим",
+    "login": "Max",
+    "password": "123",
+    "role": "guest"
+  },
+  {
+    "name": "Настя",
+    "login": "Nastya",
+    "password": "Max",
+    "role": "guest"
+  },
+  {
+    "name": "Анастасия",
+    "login": "Dashko",
+    "password": "111",
+    "role": "guest"
+  }
+]

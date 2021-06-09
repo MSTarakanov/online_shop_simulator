@@ -38,7 +38,7 @@ def update_admin_catalog(catalog, currentRow, currentColumn):
     print(f'Приветствуем, администратор {currentUser["name"]}')
     print('Для управления каталогом используются стрелки клавиатуры, для изменения нажмите Enter')
     print('Для выхода из каталога нажмите "q"')
-    for product, values in catalog['products'].items():
+    for product, values in catalog.items():
         print('%-15s' % product, end='')
         if currentColumn == 1 and currentRow == product:
             print('\033[31mЦена: %-4d\033[0m' % (values['price']), end='')
@@ -56,17 +56,17 @@ def update_guest_catalog(catalog, currentRow, currentColumn):
     print('Для управления каталогом используются стрелки клавиатуры')
     print('Для выхода из каталога нажмите "q"')
     print('%66s' % 'Количество в корзине')
-    for product, values in catalog['products'].items():
+    for product, values in catalog.items():
         print('%-15s Цена: %-4d  Количество на складе: %-4d' % (product, values['price'], values['amount']), end='')
         if currentRow == product:
             if currentColumn != get_cart_product_amount(product):
-                change_cart_product_value(product, currentColumn, catalog['products'][product]['price'])
-            if catalog['products'][product]['amount'] < get_cart_product_amount(product):
+                change_cart_product_value(product, currentColumn, catalog[product]['price'])
+            if catalog[product]['amount'] < get_cart_product_amount(product):
                 print(f'\033[32m<\033[0m \033[31m{get_cart_product_amount(product)}\033[0m \033[32m>\033[0m')
             else:
                 print(f'\033[32m<\033[0m {get_cart_product_amount(product)} \033[32m>\033[0m')
         else:
-            if catalog['products'][product]['amount'] < get_cart_product_amount(product):
+            if catalog[product]['amount'] < get_cart_product_amount(product):
                 print(f'  \033[31m{get_cart_product_amount(product)}\033[0m  ')
             else:
                 print(f'  {get_cart_product_amount(product)}  ')
@@ -86,7 +86,7 @@ def is_amount_error(catalog):
         orders = json.load(orders_r)
     if is_cart_exist(orders):
         cart = get_cart(orders)
-        if any(catalog['products'][product]['amount'] < get_cart_product_amount(product) for product in
+        if any(catalog[product]['amount'] < get_cart_product_amount(product) for product in
                cart.keys()):
             return True
     return False
@@ -106,7 +106,7 @@ def get_value():
 def update_cart_prices(product_to_update, newPrice):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
-    for order in orders['orders']:
+    for order in orders:
         if order['status'] == status.CREATED:
             for product, values in order['products'].items():
                 if product == product_to_update:
@@ -118,17 +118,17 @@ def update_cart_prices(product_to_update, newPrice):
 def change_catalog_value(catalog, currentRow, currentColumn):
     newValue = get_value()
     if currentColumn == 1:
-        catalog['products'][currentRow]['price'] = newValue
+        catalog[currentRow]['price'] = newValue
         update_cart_prices(currentRow, newValue)
     elif currentColumn == 2:
-        catalog['products'][currentRow]['amount'] = newValue
+        catalog[currentRow]['amount'] = newValue
     with open('catalog.json', 'w', encoding='UTF-8') as catalog_w:
         json.dump(catalog, catalog_w, indent=2, ensure_ascii=False)
     return catalog
 
 
 def show_login_catalog(catalog):
-    currentRow = list(catalog['products'].keys())[0]
+    currentRow = list(catalog.keys())[0]
     if currentUser['role'] == role.ADMIN:
         currentColumn = 1
     elif currentUser['role'] == role.GUEST:
@@ -144,24 +144,24 @@ def show_login_catalog(catalog):
             pressedKey = ord(msvcrt.getch())
             # down
             if pressedKey == button.DOWN and currentRow != 'ok_btn':
-                if (list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) - 1 and currentUser['role'] == role.ADMIN) or \
-                   (list(catalog['products'].keys()).index(currentRow) < len(catalog['products']) - int(get_cart_sum() == 0) and currentUser['role'] == role.GUEST):
+                if (list(catalog.keys()).index(currentRow) < len(catalog) - 1 and currentUser['role'] == role.ADMIN) or \
+                   (list(catalog.keys()).index(currentRow) < len(catalog) - int(get_cart_sum() == 0) and currentUser['role'] == role.GUEST):
                     try:
-                        currentRow = list(catalog['products'].keys())[list(catalog['products'].keys()).index(currentRow) + 1]
+                        currentRow = list(catalog.keys())[list(catalog.keys()).index(currentRow) + 1]
                     except:
                         currentRow = 'ok_btn'
                     if currentUser['role'] == role.GUEST and currentRow != 'ok_btn':
                         currentColumn = get_cart_product_amount(currentRow)
             # up
-            elif pressedKey == button.UP and currentRow != 'ok_btn' and list(catalog['products'].keys()).index(currentRow) > 0:
-                currentRow = list(catalog['products'].keys())[list(catalog['products'].keys()).index(currentRow) - 1]
+            elif pressedKey == button.UP and currentRow != 'ok_btn' and list(catalog.keys()).index(currentRow) > 0:
+                currentRow = list(catalog.keys())[list(catalog.keys()).index(currentRow) - 1]
                 if currentUser['role'] == role.GUEST:
                     currentColumn = get_cart_product_amount(currentRow)
             elif pressedKey == button.UP and currentRow == 'ok_btn':
-                currentRow = list(catalog['products'].keys())[-1]
+                currentRow = list(catalog.keys())[-1]
             # right
             elif pressedKey == button.RIGHT and currentRow != 'ok_btn' and ((currentUser['role'] == role.ADMIN and currentColumn < 2) or
-                 currentUser['role'] == role.GUEST and currentColumn < catalog['products'][currentRow]['amount']):
+                 currentUser['role'] == role.GUEST and currentColumn < catalog[currentRow]['amount']):
                 currentColumn += 1
             # left
             elif pressedKey == button.LEFT and currentRow != 'ok_btn' and ((currentUser['role'] == role.ADMIN and currentColumn > 1) or
@@ -173,7 +173,7 @@ def show_login_catalog(catalog):
                     catalog = change_catalog_value(catalog, currentRow, currentColumn)
                 elif currentUser['role'] == role.GUEST and currentRow == 'ok_btn':
                     accept_order(catalog)
-                    currentRow = list(catalog['products'].keys())[-1]
+                    currentRow = list(catalog.keys())[-1]
                     currentColumn = 0
             if currentUser['role'] == role.ADMIN:
                 update_admin_catalog(catalog, currentRow, currentColumn)
@@ -187,7 +187,7 @@ def show_login_catalog(catalog):
 def change_cart_status():
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
-    for order in orders['orders']:
+    for order in orders:
         if order['status'] == status.CREATED:
             order['status'] = status.PAID
             user_order = order
@@ -198,7 +198,7 @@ def change_cart_status():
 
 def update_products_amount(user_order, catalog):
     for product, values in user_order['products'].items():
-        catalog['products'][product]['amount'] -= values['amount']
+        catalog[product]['amount'] -= values['amount']
     with open('catalog.json', 'w', encoding='UTF-8') as catalog_w:
         json.dump(catalog, catalog_w, indent=2, ensure_ascii=False)
 
@@ -210,7 +210,7 @@ def accept_order(catalog):
 def show_catalog(catalog):
     print('Для возможности взаимодействия с каталогом авторизуйтесь')
     print('Для выхода из каталога нажмите любую клавишу')
-    for product, values in catalog['products'].items():
+    for product, values in catalog.items():
         print('%-15s Цена: %-4d Количество: %d' % (product, values['price'], values['amount']))
     while not msvcrt.getch():
         pass
@@ -219,14 +219,14 @@ def show_catalog(catalog):
 
 def get_max_id(orders):
     max_id = 0
-    for order in orders['orders']:
+    for order in orders:
         if order['id'] > max_id:
             max_id = order['id']
     return max_id
 
 
 def is_cart_exist(orders):
-    if any(order['user'] == currentUser['login'] and order['status'] == status.CREATED for order in orders['orders']):
+    if any(order['user'] == currentUser['login'] and order['status'] == status.CREATED for order in orders):
         return True
     return False
 
@@ -235,9 +235,9 @@ def change_cart_product_value(productName, newProductAmount, productPrice):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
     if not is_cart_exist(orders) and newProductAmount != 0:
-        orders['orders'].append({"id": get_max_id(orders) + 1, "user": currentUser['login'],
+        orders.append({"id": get_max_id(orders) + 1, "user": currentUser['login'],
                                  "date": dt.datetime.now().strftime('%d.%m.%y %H:%M'), "status": status.CREATED, "products": {}})
-    for order in orders['orders']:
+    for order in orders:
         if order['user'] == currentUser['login'] and order['status'] == status.CREATED:
             if productName not in order['products']:
                 order['products'][productName] = {'price': productPrice, 'amount': newProductAmount}
@@ -247,14 +247,14 @@ def change_cart_product_value(productName, newProductAmount, productPrice):
                 elif product == productName and newProductAmount == 0:
                     order['products'].pop(product)
                     if order['products'] == {}:
-                        orders['orders'].remove(order)
+                        orders.remove(order)
                     break
     with open('orders.json', 'w', encoding='UTF-8') as orders_w:
         json.dump(orders, orders_w, indent=2, ensure_ascii=False)
 
 
 def get_cart(orders):
-    for order in orders['orders']:
+    for order in orders:
         if order['user'] == currentUser['login'] and order['status'] == status.CREATED:
             return order['products']
     return None
@@ -284,9 +284,8 @@ def write_to_users_json(newName, newLogin, newPassword):
     with open('users.json', 'r', encoding='UTF-8') as users_r:
         file = json.load(users_r)
     with open('users.json', 'w', encoding='UTF-8') as users_w:
-        target = file['users']
         user_info = {'name': newName, 'login': newLogin, 'password': newPassword, 'role': role.GUEST}
-        target.append(user_info)
+        file.append(user_info)
         json.dump(file, users_w, indent=2, ensure_ascii=False)
 
 
@@ -305,13 +304,13 @@ def registration():
 def authorize():
     with open('users.json', 'r', encoding='UTF-8') as users_r:
         usersFile = json.load(users_r)
-    allLogins = list(map(lambda x: x['login'], usersFile['users']))
+    allLogins = list(map(lambda x: x['login'], usersFile))
     login = input("Введите логин: ")
     while not allLogins.__contains__(login):
         print('Пользователь не найден')
         login = input("Введите логин: ")
     password = input("Введите пароль: ")
-    for user in usersFile['users']:
+    for user in usersFile:
         if user['login'] == login:
             correctPassword = user['password']
             while password != correctPassword:
@@ -359,7 +358,7 @@ def update_orders(currentRow):
     print('Ваши заказы')
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
-    for order in orders['orders']:
+    for order in orders:
         if (currentUser['role'] == role.GUEST and order['user'] == currentUser['login'] and order['status'] == status.PAID) or \
            (currentUser['role'] == role.ADMIN and order['status'] != status.CREATED):
             user_orders_list.append(order)
@@ -380,7 +379,7 @@ def get_status():
 def change_order_status(order_to_update):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
-    for order in orders['orders']:
+    for order in orders:
         if order == order_to_update:
             order['status'] = get_status()
             ret = order
@@ -504,8 +503,8 @@ def main():
 main()
 
 
-# 'orders' 'users' 'products' - лишнее
 # управляющие RED_TEXT = \033m[0
 
 # на ку выходит отовсюду
 # можно установить отрицательное число
+# статус выводится цифрой
