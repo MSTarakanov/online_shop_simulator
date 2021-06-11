@@ -1,5 +1,5 @@
 from common import os, json, msvcrt
-from common import currentUser, role, status, button
+from common import currentUser, status, button
 from common import show_menu, get_order_products_amount, get_order_sum, get_order_index, get_status
 
 
@@ -141,7 +141,7 @@ def update_admin_catalog(catalog, currentRow, currentColumn):
             print('Количество: %d' % (values['amount']))
 
 
-def show_login_admin_catalog(catalog):
+def show_admin_catalog(catalog):
     currentRow = list(catalog.keys())[0]
     currentColumn = 1
     pressedKey = None
@@ -171,20 +171,13 @@ def show_login_admin_catalog(catalog):
 
 
 # функции, показывающие каталог
-def show_catalog(catalog):
-    print('Для возможности взаимодействия с каталогом авторизуйтесь')
-    print('Для выхода из каталога нажмите любую клавишу')
-    for product, values in catalog.items():
-        print('%-15s Цена: %-4d Количество: %d' % (product, values['price'], values['amount']))
-    while not msvcrt.getch():
-        pass
-    show_menu(['Каталог', 'Заказы', 'Выйти'], menuFunctions)
+
 
 
 def view_owner_catalog():
     with open('catalog.json', 'r', encoding='UTF-8') as catalog_r:
         catalog = json.load(catalog_r)
-    show_login_admin_catalog(catalog)
+    show_admin_catalog(catalog)
 
 
 # возвращают один из статусов, чтобы можно было выбрать через меню

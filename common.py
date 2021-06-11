@@ -50,46 +50,10 @@ def update_admin_catalog(catalog, currentRow, currentColumn):
             print('Количество: %d' % (values['amount']))
 
 
-def update_guest_catalog(catalog, currentRow, currentColumn):
-    os.system("cls")
-    print(f'Приветствуем, {currentUser["name"]}')
-    print('Для управления каталогом используются стрелки клавиатуры')
-    print('Для выхода из каталога нажмите "q"')
-    print('%66s' % 'Количество в корзине')
-    for product, values in catalog.items():
-        print('%-15s Цена: %-4d  Количество на складе: %-4d' % (product, values['price'], values['amount']), end='')
-        if currentRow == product:
-            if currentColumn != get_cart_product_amount(product):
-                change_cart_product_value(product, currentColumn, catalog[product]['price'])
-            if catalog[product]['amount'] < get_cart_product_amount(product):
-                print(f'\033[32m<\033[0m \033[31m{get_cart_product_amount(product)}\033[0m \033[32m>\033[0m')
-            else:
-                print(f'\033[32m<\033[0m {get_cart_product_amount(product)} \033[32m>\033[0m')
-        else:
-            if catalog[product]['amount'] < get_cart_product_amount(product):
-                print(f'  \033[31m{get_cart_product_amount(product)}\033[0m  ')
-            else:
-                print(f'  {get_cart_product_amount(product)}  ')
-    if is_amount_error(catalog):
-        print('Количество товаров на складе изменилось, некоторые товары больше недоступны')
-        print('Уменьшите количество товаров в корзине до допустимого предела!')
-    else:
-        if get_cart_sum() != 0:
-            if currentRow != 'ok_btn':
-                print('Сумма заказа: %-5d            Подтвердить и оплатить' % get_cart_sum())
-            else:
-                print('Сумма заказа: %-5d            \033[32mПодтвердить и оплатить\033[0m' % get_cart_sum())
 
 
-def is_amount_error(catalog):
-    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
-        orders = json.load(orders_r)
-    if is_cart_exist(orders):
-        cart = get_cart(orders)
-        if any(catalog[product]['amount'] < get_cart_product_amount(product) for product in
-               cart.keys()):
-            return True
-    return False
+
+
 
 
 def get_value():
@@ -188,28 +152,7 @@ def show_login_catalog(catalog):
         show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'])
 
 
-def change_cart_status():
-    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
-        orders = json.load(orders_r)
-    for order in orders:
-        if order['status'] == status.CREATED:
-            order['status'] = status.PAID
-            user_order = order
-    with open('orders.json', 'w', encoding='UTF-8') as orders_w:
-        json.dump(orders, orders_w, indent=2, ensure_ascii=False)
-    return user_order
 
-
-def update_products_amount(user_order, catalog):
-    for product, values in user_order['products'].items():
-        catalog[product]['amount'] -= values['amount']
-    with open('catalog.json', 'w', encoding='UTF-8') as catalog_w:
-        json.dump(catalog, catalog_w, indent=2, ensure_ascii=False)
-
-
-def accept_order(catalog):
-    user_order = change_cart_status()
-    update_products_amount(user_order, catalog)
 
 
 
@@ -223,50 +166,12 @@ def get_max_id(orders):
     return max_id
 
 
-def is_cart_exist(orders):
-    if any(order['user'] == currentUser['login'] and order['status'] == status.CREATED for order in orders):
-        return True
-    return False
 
 
-def change_cart_product_value(productName, newProductAmount, productPrice):
-    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
-        orders = json.load(orders_r)
-    if not is_cart_exist(orders) and newProductAmount != 0:
-        orders.append({"id": get_max_id(orders) + 1, "user": currentUser['login'],
-                                 "date": dt.datetime.now().strftime('%d.%m.%y %H:%M'), "status": status.CREATED, "products": {}})
-    for order in orders:
-        if order['user'] == currentUser['login'] and order['status'] == status.CREATED:
-            if productName not in order['products']:
-                order['products'][productName] = {'price': productPrice, 'amount': newProductAmount}
-            for product, values in order['products'].items():
-                if product == productName and newProductAmount != 0:
-                    values['amount'] = newProductAmount
-                elif product == productName and newProductAmount == 0:
-                    order['products'].pop(product)
-                    if order['products'] == {}:
-                        orders.remove(order)
-                    break
-    with open('orders.json', 'w', encoding='UTF-8') as orders_w:
-        json.dump(orders, orders_w, indent=2, ensure_ascii=False)
 
 
-def get_cart(orders):
-    for order in orders:
-        if order['user'] == currentUser['login'] and order['status'] == status.CREATED:
-            return order['products']
-    return None
 
 
-def get_cart_product_amount(product_name):
-    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
-        orders = json.load(orders_r)
-    cart = get_cart(orders)
-    if cart:
-        for product, values in cart.items():
-            if product == product_name:
-                return values['amount']
-    return 0
 
 
 # def view_catalog():
@@ -276,11 +181,6 @@ def get_cart_product_amount(product_name):
 #         show_catalog(catalog)
 #     elif currentUser['role'] == role.GUEST or currentUser['role'] == role.ADMIN:
 #         show_login_catalog(catalog)
-
-
-
-
-
 
 
 def authorize():
@@ -309,15 +209,6 @@ def logout():
     show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'])
 
 
-def get_cart_sum():
-    cart_sum = 0
-    with open('orders.json', 'r', encoding='UTF-8') as orders_r:
-        orders = json.load(orders_r)
-    if is_cart_exist(orders):
-        cart = get_cart(orders)
-        for values in cart.values():
-            cart_sum += values['price'] * values['amount']
-    return cart_sum
 
 
 def get_order_products_amount(order):
@@ -440,7 +331,7 @@ def update_menu(listOfPoints, currentPoint):
             print(f"  {point[1]}")
 
 
-def show_menu(listOfPoints, menuFunctions, view_order=None, update_orders=None):
+def show_menu(listOfPoints, menuFunctions):
     pressedKey = None
     currentPoint = 1
     update_menu(listOfPoints, currentPoint)
