@@ -1,7 +1,8 @@
-from common import os, json, msvcrt, dt
+import datetime as dt
+import json
+from common import os, msvcrt
 from common import button, status
-from common import show_menu, get_order_products_amount, get_order_sum, get_order_index,\
-    get_max_id
+from common import show_menu, get_order_products_amount, get_order_sum, get_order_index, get_max_id
 
 
 def get_cart_sum():
@@ -15,7 +16,6 @@ def get_cart_sum():
     return cart_sum
 
 
-
 def is_amount_error(catalog):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
@@ -26,11 +26,11 @@ def is_amount_error(catalog):
             return True
     return False
 
+
 def is_cart_exist(orders):
     if any(order['user'] == currentUser['login'] and order['status'] == status.CREATED for order in orders):
         return True
     return False
-
 
 
 def change_cart_product_value(productName, newProductAmount, productPrice):
@@ -38,7 +38,7 @@ def change_cart_product_value(productName, newProductAmount, productPrice):
         orders = json.load(orders_r)
     if not is_cart_exist(orders) and newProductAmount != 0:
         orders.append({"id": get_max_id(orders) + 1, "user": currentUser['login'],
-                                 "date": dt.datetime.now().strftime('%d.%m.%y %H:%M'), "status": status.CREATED, "products": {}})
+                       "date": dt.datetime.now().strftime('%d.%m.%y %H:%M'), "status": status.CREATED, "products": {}})
     for order in orders:
         if order['user'] == currentUser['login'] and order['status'] == status.CREATED:
             if productName not in order['products']:
@@ -89,6 +89,7 @@ def update_guest_catalog(catalog, currentRow, currentColumn):
 def change_cart_status():
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
+    user_order = None
     for order in orders:
         if order['status'] == status.CREATED:
             order['status'] = status.PAID
@@ -135,16 +136,17 @@ def show_login_catalog(catalog):
             elif pressedKey == button.UP and currentRow == 'ok_btn':
                 currentRow = list(catalog.keys())[-1]
             # right
-            elif pressedKey == button.RIGHT and currentRow != 'ok_btn' and currentColumn < catalog[currentRow]['amount']:
+            elif pressedKey == button.RIGHT and currentRow != 'ok_btn' and \
+                    currentColumn < catalog[currentRow]['amount']:
                 currentColumn += 1
             # left
             elif pressedKey == button.LEFT and currentRow != 'ok_btn' and currentColumn > 0:
                 currentColumn -= 1
             # enter
             elif pressedKey == button.ENTER and currentRow == 'ok_btn':
-                    accept_order(catalog)
-                    currentRow = list(catalog.keys())[-1]
-                    currentColumn = 0
+                accept_order(catalog)
+                currentRow = list(catalog.keys())[-1]
+                currentColumn = 0
             update_guest_catalog(catalog, currentRow, currentColumn)
     show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'], ClientMenuFunctions)
 
@@ -300,13 +302,12 @@ def logout():
 
 currentUser = {}
 
-
-ClientMenuFunctions = { 'Регистрация': registration,
-                        'Каталог': view_guest_catalog,
-                        'Авторизация': authorize,
-                        'Выйти из аккаунта': logout,
-                        'Заказы': view_guest_orders,
-                        'Выйти': exit}
+ClientMenuFunctions = {'Регистрация': registration,
+                       'Каталог': view_guest_catalog,
+                       'Авторизация': authorize,
+                       'Выйти из аккаунта': logout,
+                       'Заказы': view_guest_orders,
+                       'Выйти': exit}
 
 
 def main():

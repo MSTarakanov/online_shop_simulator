@@ -1,6 +1,7 @@
-from common import os, json, msvcrt
+import json
+from common import os, msvcrt
 from common import currentUser, status, button
-from common import show_menu, get_order_products_amount, get_order_sum, get_order_index, get_status
+from common import show_menu, get_order_products_amount, get_order_sum, get_order_index, get_status, get_value
 
 
 def update_order(order):
@@ -22,13 +23,14 @@ def update_order(order):
 def change_order_status(order_to_update):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
+    currentOrder = None
     for order in orders:
         if order == order_to_update:
             order['status'] = get_status(menuFunctions)
-            ret = order
+            currentOrder = order
     with open('orders.json', 'w', encoding='UTF-8') as orders_w:
         json.dump(orders, orders_w, indent=2, ensure_ascii=False)
-    return ret
+    return currentOrder
 
 
 def view_order(order, user_order_list):
@@ -64,6 +66,7 @@ def update_orders(currentRow):
               (order['id'], order['date'], get_order_products_amount(order), get_order_sum(order), order['status']))
     return user_orders_list
 
+
 def view_owner_orders(currentRow=0):
     user_orders_list = update_orders(currentRow)
     pressedKey = None
@@ -98,18 +101,18 @@ def update_cart_prices(product_to_update, newPrice):
         json.dump(orders, orders_w, indent=2, ensure_ascii=False)
 
 
-def get_value():
-    while True:
-        newValue = input('Введите новое значение: ')
-        try:
-            newValue = int(newValue)
-            assert (newValue >= 0)
-            break
-        except ValueError:
-            print("Введите целое число!")
-        except AssertionError:
-            print("Введите положительное число!")
-    return newValue
+# def get_value():
+#     while True:
+#         newValue = input('Введите новое значение: ')
+#         try:
+#             newValue = int(newValue)
+#             assert (newValue >= 0)
+#             break
+#         except ValueError:
+#             print("Введите целое число!")
+#         except AssertionError:
+#             print("Введите положительное число!")
+#     return newValue
 
 
 def change_catalog_value(catalog, currentRow, currentColumn):
@@ -171,7 +174,6 @@ def show_admin_catalog(catalog):
 
 
 # функции, показывающие каталог
-
 
 
 def view_owner_catalog():
