@@ -1,9 +1,11 @@
 import json
 from common import os, msvcrt
-from common import currentUser, status, button
+from common import status, button
 from common import show_menu, get_order_products_amount, get_order_sum, get_order_index, get_status, get_value
 
 
+# ФУНКЦИИ ПУНКТА МЕНЮ "ЗАКАЗЫ" ВЛАДЕЛЬЦА
+# функция, которая обновляет вида конкретного заказа
 def update_order(order):
     os.system("cls")
     print(order)
@@ -20,6 +22,7 @@ def update_order(order):
     print('Статус заказа: \033[32m%s\033[0m' % order['status'])
 
 
+# функция для изменения статуса заказа владельцем
 def change_order_status(order_to_update):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
@@ -33,6 +36,7 @@ def change_order_status(order_to_update):
     return currentOrder
 
 
+# функция которая реагирует на действия владельца с конкретным заказом
 def view_order(order, user_order_list):
     update_order(order)
     pressedKey = None
@@ -47,6 +51,7 @@ def view_order(order, user_order_list):
     view_owner_orders(user_order_list.index(get_order_index(order, user_order_list)))
 
 
+# функция, обновляющая вид меню заказов
 def update_orders(currentRow):
     os.system("cls")
     user_orders_list = []
@@ -67,6 +72,7 @@ def update_orders(currentRow):
     return user_orders_list
 
 
+# функция, которая реагирует на действия владельца в заказах
 def view_owner_orders(currentRow=0):
     user_orders_list = update_orders(currentRow)
     pressedKey = None
@@ -87,8 +93,8 @@ def view_owner_orders(currentRow=0):
     show_menu(['Каталог', 'Заказы', 'Выйти'], menuFunctions)
 
 
-# функции для отображения каталога для владельца
-
+# ФУНКЦИИ КАТАЛОГА ВЛАДЕЛЬЦА
+# функция, которая обновляет цену товара в корзинах пользователей после изменения владельцем
 def update_cart_prices(product_to_update, newPrice):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
@@ -101,20 +107,7 @@ def update_cart_prices(product_to_update, newPrice):
         json.dump(orders, orders_w, indent=2, ensure_ascii=False)
 
 
-# def get_value():
-#     while True:
-#         newValue = input('Введите новое значение: ')
-#         try:
-#             newValue = int(newValue)
-#             assert (newValue >= 0)
-#             break
-#         except ValueError:
-#             print("Введите целое число!")
-#         except AssertionError:
-#             print("Введите положительное число!")
-#     return newValue
-
-
+# функция, позволяющая менять значения цены и количства товара владельцу
 def change_catalog_value(catalog, currentRow, currentColumn):
     newValue = get_value()
     if currentColumn == 1:
@@ -127,6 +120,7 @@ def change_catalog_value(catalog, currentRow, currentColumn):
     return catalog
 
 
+# функция, обновляющая вид каталога
 def update_admin_catalog(catalog, currentRow, currentColumn):
     os.system("cls")
     print(f'Приветствуем, администратор {currentUser["name"]}')
@@ -144,6 +138,7 @@ def update_admin_catalog(catalog, currentRow, currentColumn):
             print('Количество: %d' % (values['amount']))
 
 
+# функция, реагирующая на действия владельца в каталоге
 def show_admin_catalog(catalog):
     currentRow = list(catalog.keys())[0]
     currentColumn = 1
@@ -173,16 +168,15 @@ def show_admin_catalog(catalog):
     show_menu(['Каталог', 'Заказы', 'Выйти'], menuFunctions)
 
 
-# функции, показывающие каталог
-
-
+# функция, которая вызывается из меню для отображения меню владельца
 def view_owner_catalog():
     with open('catalog.json', 'r', encoding='UTF-8') as catalog_r:
         catalog = json.load(catalog_r)
     show_admin_catalog(catalog)
 
 
-# возвращают один из статусов, чтобы можно было выбрать через меню
+# ИНСТРУМЕНТЫ
+# возвращают один из статусов, чтобы можно было вызвать через меню (меню статусов)
 def delivered_status():
     return status.DELIVERED
 
@@ -195,6 +189,7 @@ def paid_status():
     return status.PAID
 
 
+# объявление словаря фунций меню (ключ - пункт меню, значение - функция)
 menuFunctions = {'Каталог': view_owner_catalog,
                  'Заказы': view_owner_orders,
                  'Доставлен': delivered_status,
@@ -202,14 +197,16 @@ menuFunctions = {'Каталог': view_owner_catalog,
                  'Оплачен': paid_status,
                  'Выйти': exit}
 
+# объявление юзера-администратора
 currentUser = {
-                "name": "Валерия",
-                "login": "admin",
-                "password": "admin",
-                "role": "admin"
-            }
+    "name": "Валерия",
+    "login": "admin",
+    "password": "admin",
+    "role": "admin"
+}
 
 
+# основная фунцкция
 def main():
     show_menu(['Каталог', 'Заказы', 'Выйти'], menuFunctions)
 

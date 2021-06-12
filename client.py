@@ -5,6 +5,8 @@ from common import button, status
 from common import show_menu, get_order_products_amount, get_order_sum, get_order_index, get_max_id
 
 
+# ФУНЦИИ КАТАЛОГА ПОЛЬЗОВАТЕЛЯ
+# функция, которая возвращает сумму заказа в корзине
 def get_cart_sum():
     cart_sum = 0
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
@@ -16,6 +18,7 @@ def get_cart_sum():
     return cart_sum
 
 
+# функция, определяющая есть ли на складе нужное количество товара
 def is_amount_error(catalog):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
@@ -27,12 +30,14 @@ def is_amount_error(catalog):
     return False
 
 
+# функция, определяющая существует ли открытая корзина
 def is_cart_exist(orders):
     if any(order['user'] == currentUser['login'] and order['status'] == status.CREATED for order in orders):
         return True
     return False
 
 
+# функция, которая изменяет значение продуктов в корзине пользователя
 def change_cart_product_value(productName, newProductAmount, productPrice):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
@@ -55,6 +60,7 @@ def change_cart_product_value(productName, newProductAmount, productPrice):
         json.dump(orders, orders_w, indent=2, ensure_ascii=False)
 
 
+# функция, обновляющая вид каталога для пользователя
 def update_guest_catalog(catalog, currentRow, currentColumn):
     os.system("cls")
     print(f'Приветствуем, {currentUser["name"]}')
@@ -86,6 +92,7 @@ def update_guest_catalog(catalog, currentRow, currentColumn):
                 print('Сумма заказа: %-5d            \033[32mПодтвердить и оплатить\033[0m' % get_cart_sum())
 
 
+# функция, которая изменяет значение статуса после оплаты
 def change_cart_status():
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
@@ -99,6 +106,7 @@ def change_cart_status():
     return user_order
 
 
+# функция, которая обновляет количество товара на складе после покупки пользователя
 def update_products_amount(user_order, catalog):
     for product, values in user_order['products'].items():
         catalog[product]['amount'] -= values['amount']
@@ -106,11 +114,13 @@ def update_products_amount(user_order, catalog):
         json.dump(catalog, catalog_w, indent=2, ensure_ascii=False)
 
 
+# функция, позволяющая подтвердить и оплатить заказ
 def accept_order(catalog):
     user_order = change_cart_status()
     update_products_amount(user_order, catalog)
 
 
+# функция, которая реагирует на действия пользователя в каталоге
 def show_login_catalog(catalog):
     currentRow = list(catalog.keys())[0]
     currentColumn = get_cart_product_amount(currentRow)
@@ -148,9 +158,10 @@ def show_login_catalog(catalog):
                 currentRow = list(catalog.keys())[-1]
                 currentColumn = 0
             update_guest_catalog(catalog, currentRow, currentColumn)
-    show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'], ClientMenuFunctions)
+    show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'], MenuFunctions)
 
 
+# функция, которяа возвращает корзину пользователя
 def get_cart(orders):
     for order in orders:
         if order['user'] == currentUser['login'] and order['status'] == status.CREATED:
@@ -158,6 +169,7 @@ def get_cart(orders):
     return None
 
 
+# функция, которая возвращает количество товара в корзине пользователя
 def get_cart_product_amount(product_name):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
@@ -169,6 +181,7 @@ def get_cart_product_amount(product_name):
     return 0
 
 
+# функция, которая показывает каталог неваторизованному пользователю
 def show_catalog(catalog):
     print('Для возможности взаимодействия с каталогом авторизуйтесь')
     print('Для выхода из каталога нажмите любую клавишу')
@@ -176,9 +189,10 @@ def show_catalog(catalog):
         print('%-15s Цена: %-4d Количество: %d' % (product, values['price'], values['amount']))
     while not msvcrt.getch():
         pass
-    show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'], ClientMenuFunctions)
+    show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'], MenuFunctions)
 
 
+# функция для выбора как вывводить каталог для пользователя
 def view_guest_catalog():
     with open('catalog.json', 'r', encoding='UTF-8') as catalog_r:
         catalog = json.load(catalog_r)
@@ -188,6 +202,8 @@ def view_guest_catalog():
         show_login_catalog(catalog)
 
 
+# ФУНКЦИИ ПУНКТА МЕНЮ "ЗАКАЗЫ" ПОЛЬЗОВАТЕЛЯ
+# функция для отображения конкретного заказа
 def update_order(order):
     os.system("cls")
     print('Для выхода из заказа нажмите "q"')
@@ -201,6 +217,7 @@ def update_order(order):
     print('Статус заказа: %s' % order['status'])
 
 
+# функция, реагиркющая на действия пользователя при отображении конкретного заказа
 def view_order(order, user_order_list):
     update_order(order)
     pressedKey = None
@@ -211,6 +228,7 @@ def view_order(order, user_order_list):
     view_guest_orders(user_order_list.index(get_order_index(order, user_order_list)))
 
 
+# функция,  которая обновляет меню заказов
 def update_orders(currentRow):
     os.system("cls")
     user_orders_list = []
@@ -232,6 +250,7 @@ def update_orders(currentRow):
     return user_orders_list
 
 
+# функция, реагирующая на действия пользователя в меню заказов
 def view_guest_orders(currentRow=0):
     user_orders_list = update_orders(currentRow)
     pressedKey = None
@@ -249,9 +268,11 @@ def view_guest_orders(currentRow=0):
                 user_orders_list = update_orders(currentRow)
             if pressedKey == button.ENTER and len(user_orders_list) > 0:
                 view_order(user_orders_list[currentRow], user_orders_list)
-    show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'], ClientMenuFunctions)
+    show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'], MenuFunctions)
 
 
+# ФУНКЦИИ АККАУНТА
+# функция для авторизации пользователя
 def authorize():
     with open('users.json', 'r', encoding='UTF-8') as users_r:
         usersFile = json.load(users_r)
@@ -269,10 +290,10 @@ def authorize():
                 password = input("Введите пароль: ")
             global currentUser
             currentUser = user
-    show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'], ClientMenuFunctions)
+    show_menu(['Каталог', 'Заказы', 'Выйти из аккаунта'], MenuFunctions)
 
 
-# Функции, для регистрации пользователя
+# функция для записи зарегистрированного пользователя в json
 def write_to_users_json(newName, newLogin, newPassword):
     with open('users.json', 'r', encoding='UTF-8') as users_r:
         file = json.load(users_r)
@@ -282,6 +303,7 @@ def write_to_users_json(newName, newLogin, newPassword):
         json.dump(file, users_w, indent=2, ensure_ascii=False)
 
 
+# функция для регистрации пользователя
 def registration():
     newName = input("Введите свое имя: ")
     newLogin = input("Введите свой логин: ")
@@ -291,27 +313,33 @@ def registration():
         newPassword = input("Введите свой пароль еще раз: ")
         newPasswordConfirm = input("Подтвердите пароль: ")
     write_to_users_json(newName, newLogin, newPassword)
-    show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'], ClientMenuFunctions)
+    show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'], MenuFunctions)
 
 
+# функция для выхода из аккаунта
 def logout():
     global currentUser
     currentUser = {}
-    show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'], ClientMenuFunctions)
+    show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'], MenuFunctions)
+
+# ИНСТРУМЕНТЫ
 
 
 currentUser = {}
 
-ClientMenuFunctions = {'Регистрация': registration,
-                       'Каталог': view_guest_catalog,
-                       'Авторизация': authorize,
-                       'Выйти из аккаунта': logout,
-                       'Заказы': view_guest_orders,
-                       'Выйти': exit}
+# объявление словаря фунций меню (ключ - пункт меню, значение - функция)
+MenuFunctions = {
+                    'Регистрация': registration,
+                    'Каталог': view_guest_catalog,
+                    'Авторизация': authorize,
+                    'Выйти из аккаунта': logout,
+                    'Заказы': view_guest_orders,
+                    'Выйти': exit
+                }
 
 
 def main():
-    show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'], ClientMenuFunctions)
+    show_menu(['Каталог', 'Авторизация', 'Регистрация', 'Выйти'], MenuFunctions)
 
 
 main()

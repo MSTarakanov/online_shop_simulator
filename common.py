@@ -1,8 +1,9 @@
-# подключим нужные библиотеки
+# подключение нужных библиотек
 import os
 import msvcrt
 
 
+# класс-перечисление статусов заказа
 class OrderStatus:
     CREATED = 'Создан'
     PAID = 'Оплачен'
@@ -10,26 +11,22 @@ class OrderStatus:
     DELIVERED = 'Доставлен'
 
 
+# класс-перечисление численного значения кнопок
 class Button:
-    UP = 72
-    DOWN = 80
-    RIGHT = 77
-    LEFT = 75
-    ENTER = 13
-    q = 113
+    UP = 72     # стрелка вверх
+    DOWN = 80   # стрелка вниз
+    RIGHT = 77  # стрелка вправо
+    LEFT = 75   # стрелка влево
+    ENTER = 13  # клавиша Enter
+    q = 113     # клавиша q
 
 
-class Role:
-    ADMIN = 'admin'
-    GUEST = 'guest'
-
-
+# инициализация классов-перечеслений
 status = OrderStatus()
 button = Button()
-role = Role()
-currentUser = {}
 
 
+# функция для получения неотрицтельного целого значения от пользователя
 def get_value():
     while True:
         newValue = input('Введите новое значение: ')
@@ -44,6 +41,7 @@ def get_value():
     return newValue
 
 
+# функция для вычисления следующего уникального id для номера заказа
 def get_max_id(orders):
     max_id = 0
     for order in orders:
@@ -52,6 +50,7 @@ def get_max_id(orders):
     return max_id
 
 
+# функция, которая возвращает количество продуктов в заказе
 def get_order_products_amount(order):
     order_products_amount = 0
     for values in order['products'].values():
@@ -59,6 +58,7 @@ def get_order_products_amount(order):
     return order_products_amount
 
 
+# функция, возвращающая сумму заказа
 def get_order_sum(order):
     order_sum = 0
     for values in order['products'].values():
@@ -66,17 +66,20 @@ def get_order_sum(order):
     return order_sum
 
 
+# функция, возвращающая статус, который выбрал пользлватель в меню
 def get_status(menuFunctions):
     return show_menu([status.PAID, status.SENT, status.DELIVERED], menuFunctions)
 
 
+# функция, возвращающая индекс заказа в списке заказов
 def get_order_index(find_to_order, user_order_list):
     for order in user_order_list:
         if order['id'] == find_to_order['id']:
             return order
 
 
-# функции меню
+# ФУНКЦИИ МЕНЮ
+# обновление вида меню с учетом текущей позиции "курсора"
 def update_menu(listOfPoints, currentPoint):
     os.system("cls")
     for point in enumerate(listOfPoints):
@@ -86,6 +89,7 @@ def update_menu(listOfPoints, currentPoint):
             print(f"  {point[1]}")
 
 
+# реакиция меню на действия пользователя (изменение значения положения курсора/нажатие на Enter)
 def show_menu(listOfPoints, menuFunctions):
     pressedKey = None
     currentPoint = 1
