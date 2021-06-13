@@ -98,7 +98,7 @@ def change_cart_status():
         orders = json.load(orders_r)
     user_order = None
     for order in orders:
-        if order['status'] == status.CREATED:
+        if order['status'] == status.CREATED and order['user'] == currentUser['login']:
             order['status'] = status.PAID
             user_order = order
     with open('orders.json', 'w', encoding='UTF-8') as orders_w:

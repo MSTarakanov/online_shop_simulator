@@ -1,6 +1,7 @@
 # подключение нужных библиотек
 import os
 import msvcrt
+import cursor
 
 
 # класс-перечисление статусов заказа

@@ -1,14 +1,14 @@
 {
   "Огурцы": {
-    "price": 120,
-    "amount": 8
+    "price": 100,
+    "amount": 22
   },
   "Томаты": {
     "price": 70,
-    "amount": 12
+    "amount": 13
   },
   "Картофель": {
-    "price": 25,
+    "price": 30,
     "amount": 7
   }
 }

@@ -16,11 +16,5 @@
     "login": "Nastya",
     "password": "Max",
     "role": "guest"
-  },
-  {
-    "name": "Анастасия",
-    "login": "Dashko",
-    "password": "111",
-    "role": "guest"
   }
 ]

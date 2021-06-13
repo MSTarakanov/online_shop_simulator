@@ -1,5 +1,5 @@
 import json
-from common import os, msvcrt
+from common import os, msvcrt, cursor
 from common import status, button
 from common import show_menu, get_order_products_amount, get_order_sum, get_order_index, get_status, get_value
 
@@ -8,7 +8,6 @@ from common import show_menu, get_order_products_amount, get_order_sum, get_orde
 # функция, которая обновляет вида конкретного заказа
 def update_order(order):
     os.system("cls")
-    print(order)
     print('Для выхода из заказа нажмите "q"')
     print('Для изменения статуса заказа нажмите Enter и выберите статус')
     print('Пользователь: %s' % order['user'])
@@ -60,7 +59,7 @@ def update_orders(currentRow):
     with open('orders.json', 'r', encoding='UTF-8') as orders_r:
         orders = json.load(orders_r)
     for order in orders:
-        if order['status'] != status.CREATED:
+        if order['status'] != status.CREATED and order['status'] != status.DELIVERED:
             user_orders_list.append(order)
     if len(user_orders_list) == 0:
         print('Посетители еще не сделали ни одного заказа')
@@ -148,7 +147,6 @@ def show_admin_catalog(catalog):
         pressedKey = None
         while pressedKey is None:
             pressedKey = ord(msvcrt.getch())
-            print(pressedKey)
             # down
             if pressedKey == button.DOWN and list(catalog.keys()).index(currentRow) < len(catalog) - 1:
                 currentRow = list(catalog.keys())[list(catalog.keys()).index(currentRow) + 1]
@@ -208,7 +206,9 @@ currentUser = {
 
 # основная фунцкция
 def main():
+    cursor.hide()
     show_menu(['Каталог', 'Заказы', 'Выйти'], menuFunctions)
+    cursor.show()
 
 
 main()
